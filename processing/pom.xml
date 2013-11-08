@@ -107,6 +107,11 @@
             <groupId>com.ibm.icu</groupId>
             <artifactId>icu4j</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.dynjs</groupId>
+            <artifactId>dynjs</artifactId>
+            <version>0.2.0</version>
+        </dependency>
 
 
         <!-- Tests -->
