@@ -123,7 +123,12 @@ public class CompressedFloatsIndexedSupplier implements Supplier<IndexedFloats>
 
       private void loadBuffer(int bufferNum)
       {
-        Closeables.closeQuietly(holder);
+        try {
+          Closeables.close(holder, true);
+        }
+        catch (IOException e) {
+          //
+        }
         holder = baseFloatBuffers.get(bufferNum);
         buffer = holder.get();
         currIndex = bufferNum;

@@ -83,7 +83,7 @@ public class HyperloglogAggregatorTest
       aggregate(selector, agg);
     }
 
-    Assert.assertEquals(99443L, aggFactory.finalizeComputation(agg.get()));
+    Assert.assertEquals(102209L, aggFactory.finalizeComputation(agg.get()));
   }
 
   // Provides a nice printout of error rates as a function of cardinality

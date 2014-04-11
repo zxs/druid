@@ -52,7 +52,7 @@ public class SerializerUtils
       writeString(out, name);
     }
     finally {
-      Closeables.closeQuietly(out);
+      Closeables.close(out,true);
     }
   }
 

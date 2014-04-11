@@ -125,8 +125,8 @@ public class FlightsConverter
         }
       }
       finally {
-        Closeables.closeQuietly(in);
-        Closeables.closeQuietly(out);
+        Closeables.close(in, true);
+        Closeables.close(out, true);
       }
     }
   }

@@ -29,6 +29,7 @@ import io.druid.segment.Cursor;
 import io.druid.segment.DimensionSelector;
 import io.druid.segment.data.IndexedInts;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -241,7 +242,12 @@ public class PooledTopNAlgorithm extends BaseTopNAlgorithm<int[], BufferAggregat
     if (resultsBufHolder != null) {
       resultsBufHolder.get().clear();
     }
-    Closeables.closeQuietly(resultsBufHolder);
+    try {
+      Closeables.close(resultsBufHolder, true);
+    }
+    catch (IOException e) {
+      //
+    }
   }
 
   public static class PooledTopNParams extends TopNParams

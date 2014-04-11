@@ -54,6 +54,7 @@ import org.joda.time.DateTime;
 import org.joda.time.Interval;
 
 import javax.annotation.Nullable;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -121,7 +122,12 @@ public class GroupByQueryEngine
                                   @Override
                                   public void cleanup(RowIterator iterFromMake)
                                   {
-                                    Closeables.closeQuietly(iterFromMake);
+                                    try {
+                                      Closeables.close(iterFromMake, true);
+                                    }
+                                    catch (IOException e) {
+                                      //
+                                    }
                                   }
                                 }
                             );
@@ -133,7 +139,12 @@ public class GroupByQueryEngine
               @Override
               public void cleanup(Iterator<Sequence<Row>> iterFromMake)
               {
-                Closeables.closeQuietly(bufferHolder);
+                try {
+                  Closeables.close(bufferHolder, true);
+                }
+                catch (IOException e) {
+                  //
+                }
               }
             }
         )

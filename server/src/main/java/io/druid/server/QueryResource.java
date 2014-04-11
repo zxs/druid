@@ -205,7 +205,7 @@ public class QueryResource
     }
     finally {
       resp.flushBuffer();
-      Closeables.closeQuietly(out);
+      Closeables.close(out, true);
     }
   }
 }

@@ -88,7 +88,7 @@ public class HdfsDataSegmentPusher implements DataSegmentPusher
       out.close();
     }
     finally {
-      Closeables.closeQuietly(out);
+      Closeables.close(out, true);
     }
 
     return createDescriptorFile(

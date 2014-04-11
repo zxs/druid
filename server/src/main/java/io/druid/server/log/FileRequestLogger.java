@@ -83,7 +83,7 @@ public class FileRequestLogger implements RequestLogger
 
               try {
                 synchronized (lock) {
-                  Closeables.closeQuietly(fileWriter);
+                  Closeables.close(fileWriter, true);
                   fileWriter = new FileWriter(new File(baseDir, currentDay.toString()), true);
                 }
               }
@@ -105,7 +105,12 @@ public class FileRequestLogger implements RequestLogger
   public void stop()
   {
     synchronized (lock) {
-      Closeables.closeQuietly(fileWriter);
+      try {
+        Closeables.close(fileWriter, true);
+      }
+      catch (IOException e) {
+        //
+      }
     }
   }
 

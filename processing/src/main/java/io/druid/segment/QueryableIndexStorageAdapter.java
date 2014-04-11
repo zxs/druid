@@ -44,6 +44,7 @@ import org.joda.time.DateTime;
 import org.joda.time.Interval;
 
 import java.io.Closeable;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -110,7 +111,12 @@ public class QueryableIndexStorageAdapter implements StorageAdapter
       return new DateTime(column.getLongSingleValueRow(0));
     }
     finally {
-      Closeables.closeQuietly(column);
+      try {
+        Closeables.close(column, true);
+      }
+      catch (IOException e) {
+        //
+      }
     }
   }
 
@@ -123,7 +129,12 @@ public class QueryableIndexStorageAdapter implements StorageAdapter
       return new DateTime(column.getLongSingleValueRow(column.length() - 1));
     }
     finally {
-      Closeables.closeQuietly(column);
+      try {
+        Closeables.close(column, true);
+      }
+      catch (IOException e) {
+        //
+      }
     }
   }
 
@@ -512,16 +523,36 @@ public class QueryableIndexStorageAdapter implements StorageAdapter
             @Override
             public void run()
             {
-              Closeables.closeQuietly(timestamps);
+              try {
+                Closeables.close(timestamps, true);
+              }
+              catch (IOException e) {
+                //
+              }
               for (GenericColumn column : genericColumnCache.values()) {
-                Closeables.closeQuietly(column);
+                try {
+                  Closeables.close(column, true);
+                }
+                catch (IOException e) {
+                  //
+                }
               }
               for (ComplexColumn complexColumn : complexColumnCache.values()) {
-                Closeables.closeQuietly(complexColumn);
+                try {
+                  Closeables.close(complexColumn, true);
+                }
+                catch (IOException e) {
+                  //
+                }
               }
               for (Object column : objectColumnCache.values()) {
                 if(column instanceof Closeable) {
-                  Closeables.closeQuietly((Closeable) column);
+                  try {
+                    Closeables.close((Closeable) column, true);
+                  }
+                  catch (IOException e) {
+                    //
+                  }
                 }
               }
             }
@@ -911,16 +942,36 @@ public class QueryableIndexStorageAdapter implements StorageAdapter
             @Override
             public void run()
             {
-              Closeables.closeQuietly(timestamps);
+              try {
+                Closeables.close(timestamps, true);
+              }
+              catch (IOException e) {
+                //
+              }
               for (GenericColumn column : genericColumnCache.values()) {
-                Closeables.closeQuietly(column);
+                try {
+                  Closeables.close(column, true);
+                }
+                catch (IOException e) {
+                  //
+                }
               }
               for (ComplexColumn complexColumn : complexColumnCache.values()) {
-                Closeables.closeQuietly(complexColumn);
+                try {
+                  Closeables.close(complexColumn, true);
+                }
+                catch (IOException e) {
+                  //
+                }
               }
               for (Object column : objectColumnCache.values()) {
                 if (column instanceof Closeable) {
-                  Closeables.closeQuietly((Closeable) column);
+                  try {
+                    Closeables.close((Closeable) column, true);
+                  }
+                  catch (IOException e) {
+                    //
+                  }
                 }
               }
             }

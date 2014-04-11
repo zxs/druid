@@ -338,7 +338,12 @@ public class DruidClusterBridge
         log.makeAlert(e, "Exception becoming leader")
            .emit();
         final LeaderLatch oldLatch = createNewLeaderLatch();
-        Closeables.closeQuietly(oldLatch);
+        try {
+          Closeables.close(oldLatch, true);
+        }
+        catch (IOException e1) {
+          //
+        }
         try {
           leaderLatch.get().start();
         }

@@ -26,6 +26,8 @@ import org.apache.curator.retry.RetryOneTime;
 import org.apache.curator.test.TestingServer;
 import org.apache.curator.test.Timing;
 
+import java.io.IOException;
+
 /**
  */
 public class CuratorTestBase
@@ -51,7 +53,12 @@ public class CuratorTestBase
 
   protected void tearDownServerAndCurator()
   {
-    Closeables.closeQuietly(curator);
-    Closeables.closeQuietly(server);
+    try {
+      Closeables.close(curator, true);
+      Closeables.close(server, true);
+    }
+    catch (IOException e) {
+      //
+    }
   }
 }

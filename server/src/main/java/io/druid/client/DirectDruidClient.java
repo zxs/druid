@@ -210,7 +210,12 @@ public class DirectDruidClient<T> implements QueryRunner<T>
           @Override
           public void cleanup(JsonParserIterator<T> iterFromMake)
           {
-            Closeables.closeQuietly(iterFromMake);
+            try {
+              Closeables.close(iterFromMake, true);
+            }
+            catch (IOException e) {
+              //
+            }
           }
         }
     );
@@ -259,7 +264,12 @@ public class DirectDruidClient<T> implements QueryRunner<T>
         return false;
       }
       if (jp.getCurrentToken() == JsonToken.END_ARRAY) {
-        Closeables.closeQuietly(jp);
+        try {
+          Closeables.close(jp, true);
+        }
+        catch (IOException e) {
+          //
+        }
         return false;
       }
 

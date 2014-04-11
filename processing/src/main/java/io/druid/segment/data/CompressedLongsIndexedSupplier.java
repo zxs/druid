@@ -122,7 +122,12 @@ public class CompressedLongsIndexedSupplier implements Supplier<IndexedLongs>
 
       private void loadBuffer(int bufferNum)
       {
-        Closeables.closeQuietly(holder);
+        try {
+          Closeables.close(holder, true);
+        }
+        catch (IOException e) {
+          //
+        }
         holder = baseLongBuffers.get(bufferNum);
         buffer = holder.get();
         currIndex = bufferNum;

@@ -22,6 +22,8 @@ package io.druid.segment.column;
 import com.google.common.base.Supplier;
 import com.google.common.io.Closeables;
 
+import java.io.IOException;
+
 /**
  */
 class SimpleColumn implements Column
@@ -68,7 +70,12 @@ class SimpleColumn implements Column
       return column.length();
     }
     finally {
-      Closeables.closeQuietly(column);
+      try {
+        Closeables.close(column, true);
+      }
+      catch (IOException e) {
+        //
+      }
     }
   }
 

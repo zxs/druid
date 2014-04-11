@@ -41,6 +41,7 @@ import io.druid.segment.data.ListIndexed;
 import org.joda.time.Interval;
 
 import java.io.Closeable;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -208,10 +209,20 @@ public class QueryableIndexIndexableAdapter implements IndexableAdapter
           {
             final boolean hasNext = currRow < numRows;
             if (!hasNext && !done) {
-              Closeables.closeQuietly(timestamps);
+              try {
+                Closeables.close(timestamps, true);
+              }
+              catch (IOException e) {
+                //
+              }
               for (Object metric : metrics) {
                 if (metric instanceof Closeable) {
-                  Closeables.closeQuietly((Closeable) metric);
+                  try {
+                    Closeables.close((Closeable) metric, true);
+                  }
+                  catch (IOException e) {
+                    //
+                  }
                 }
               }
               done = true;

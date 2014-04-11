@@ -25,6 +25,7 @@ import com.metamx.common.guava.Sequence;
 import io.druid.segment.ReferenceCountingSegment;
 
 import java.io.Closeable;
+import java.io.IOException;
 
 /**
 */
@@ -52,7 +53,12 @@ public class ReferenceCountingSegmentQueryRunner<T> implements QueryRunner<T>
       return new ResourceClosingSequence<T>(baseSequence, closeable);
     }
     catch (RuntimeException e) {
-      Closeables.closeQuietly(closeable);
+      try {
+        Closeables.close(closeable, true);
+      }
+      catch (IOException e1) {
+        //
+      }
       throw e;
     }
   }

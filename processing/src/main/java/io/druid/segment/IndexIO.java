@@ -172,7 +172,7 @@ public class IndexIO
       version = in.read();
     }
     finally {
-      Closeables.closeQuietly(in);
+      Closeables.close(in, true);
     }
     return version;
   }

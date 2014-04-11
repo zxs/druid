@@ -29,6 +29,7 @@ import io.druid.segment.data.Indexed;
 import io.druid.segment.data.IndexedIterable;
 import it.uniroma3.mat.extendedset.intset.ImmutableConciseSet;
 
+import java.io.IOException;
 import java.util.Iterator;
 
 /**
@@ -95,7 +96,12 @@ public class ColumnSelectorBitmapIndexSelector implements BitmapIndexSelector
       return column.length();
     }
     finally {
-      Closeables.closeQuietly(column);
+      try {
+        Closeables.close(column, true);
+      }
+      catch (IOException e) {
+        //
+      }
     }
   }
 

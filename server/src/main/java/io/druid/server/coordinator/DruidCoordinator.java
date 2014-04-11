@@ -608,7 +608,12 @@ public class DruidCoordinator
         log.makeAlert(e, "Unable to become leader")
            .emit();
         final LeaderLatch oldLatch = createNewLeaderLatch();
-        Closeables.closeQuietly(oldLatch);
+        try {
+          Closeables.close(oldLatch, true);
+        }
+        catch (IOException e1) {
+          //
+        }
         try {
           leaderLatch.get().start();
         }

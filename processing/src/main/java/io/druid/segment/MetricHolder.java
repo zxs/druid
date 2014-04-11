@@ -84,8 +84,8 @@ public class MetricHolder
       ByteStreams.copy(in, out);
     }
     finally {
-      Closeables.closeQuietly(out);
-      Closeables.closeQuietly(in);
+      Closeables.close(out, true);
+      Closeables.close(in, true);
     }
   }
 

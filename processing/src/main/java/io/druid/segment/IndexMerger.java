@@ -438,9 +438,9 @@ public class IndexMerger
       serializerUtils.writeString(channel, String.format("%s/%s", minTime, maxTime));
     }
     finally {
-      Closeables.closeQuietly(channel);
+      Closeables.close(channel, true);
       channel = null;
-      Closeables.closeQuietly(fileOutputStream);
+      Closeables.close(fileOutputStream, true);
       fileOutputStream = null;
     }
     IndexIO.checkFileSize(indexFile);
@@ -881,7 +881,7 @@ public class IndexMerger
       );
     }
     finally {
-      Closeables.closeQuietly(channel);
+      Closeables.close(channel, true);
       channel = null;
     }
     IndexIO.checkFileSize(indexFile);

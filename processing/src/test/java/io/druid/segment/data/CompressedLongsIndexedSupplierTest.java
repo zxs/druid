@@ -47,7 +47,7 @@ public class CompressedLongsIndexedSupplierTest
   @Before
   public void setUp() throws Exception
   {
-    Closeables.closeQuietly(indexed);
+    Closeables.close(indexed, true);
     indexed = null;
     supplier = null;
     vals = null;
@@ -56,7 +56,7 @@ public class CompressedLongsIndexedSupplierTest
   @After
   public void tearDown() throws Exception
   {
-    Closeables.closeQuietly(indexed);
+    Closeables.close(indexed, true);
   }
 
   private void setupSimple()
@@ -247,7 +247,7 @@ public class CompressedLongsIndexedSupplierTest
       stopLatch.await();
     }
     finally {
-      Closeables.closeQuietly(indexed2);
+      Closeables.close(indexed2, true);
     }
 
     if (failureHappened.get()) {

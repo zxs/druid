@@ -74,7 +74,7 @@ public class CompressedObjectStrategy<T extends Buffer> implements ObjectStrateg
       buf.put(outputBytes, 0, numDecompressedBytes);
       buf.flip();
 
-      Closeables.closeQuietly(outputBytesHolder);
+      Closeables.close(outputBytesHolder, true);
 
       return new ResourceHolder<T>()
       {
@@ -105,7 +105,12 @@ public class CompressedObjectStrategy<T extends Buffer> implements ObjectStrateg
 
     final ResourceHolder<ChunkEncoder> encoder = CompressedPools.getChunkEncoder();
     LZFChunk chunk = encoder.get().encodeChunk(buf.array(), 0, buf.array().length);
-    Closeables.closeQuietly(encoder);
+    try {
+      Closeables.close(encoder, true);
+    }
+    catch (IOException e) {
+      //
+    }
 
     return chunk.getData();
   }

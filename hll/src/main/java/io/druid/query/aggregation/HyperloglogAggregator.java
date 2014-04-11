@@ -26,6 +26,7 @@ import gnu.trove.map.TIntByteMap;
 import gnu.trove.map.hash.TIntByteHashMap;
 import io.druid.segment.ObjectColumnSelector;
 
+import java.nio.charset.Charset;
 import java.util.Comparator;
 
 public class HyperloglogAggregator implements Aggregator
@@ -93,7 +94,7 @@ public class HyperloglogAggregator implements Aggregator
     } else if (value instanceof String) {
       log.debug("value [%s]", selector.get());
 
-      final long id = Hashing.murmur3_128().hashString((String) (value)).asLong();
+      final long id = Hashing.murmur3_128().hashString((String) (value), Charset.defaultCharset()).asLong();
       final int bucket = (int) (id >>> (Long.SIZE - log2m));
       final int zerolength = Long.numberOfLeadingZeros((id << log2m) | (1 << (log2m - 1)) + 1) + 1;
 

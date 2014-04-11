@@ -163,7 +163,12 @@ public class InMemoryCompressedLongs implements IndexedLongs
   private void loadBuffer(int bufferNum)
   {
     loadBuffer = null;
-    Closeables.closeQuietly(holder);
+    try {
+      Closeables.close(holder, true);
+    }
+    catch (IOException e) {
+      //
+    }
     final byte[] compressedBytes = compressedBuffers.get(bufferNum);
     holder = strategy.fromByteBuffer(ByteBuffer.wrap(compressedBytes), compressedBytes.length);
     loadBuffer = holder.get();

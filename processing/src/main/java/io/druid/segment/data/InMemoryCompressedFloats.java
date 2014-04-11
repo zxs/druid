@@ -153,7 +153,12 @@ public class InMemoryCompressedFloats implements IndexedFloats
   private void loadBuffer(int bufferNum)
   {
     loadBuffer = null;
-    Closeables.closeQuietly(holder);
+    try {
+      Closeables.close(holder, true);
+    }
+    catch (IOException e) {
+      //
+    }
     final byte[] compressedBytes = compressedBuffers.get(bufferNum);
     holder = strategy.fromByteBuffer(ByteBuffer.wrap(compressedBytes), compressedBytes.length);
     loadBuffer = holder.get();
@@ -191,6 +196,6 @@ public class InMemoryCompressedFloats implements IndexedFloats
   @Override
   public void close() throws IOException
   {
-    Closeables.closeQuietly(holder);
+    Closeables.close(holder, true);
   }
 }

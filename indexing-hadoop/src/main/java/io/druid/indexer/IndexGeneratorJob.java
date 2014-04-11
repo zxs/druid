@@ -422,7 +422,7 @@ public class IndexGeneratorJob implements Jobby
         if (caughtException == null) {
           Closeables.close(out, false);
         } else {
-          Closeables.closeQuietly(out);
+          Closeables.close(out, true);
           throw Throwables.propagate(caughtException);
         }
       }
@@ -602,7 +602,7 @@ public class IndexGeneratorJob implements Jobby
         }
       }
       finally {
-        Closeables.closeQuietly(in);
+        Closeables.close(in, true);
       }
       out.closeEntry();
       context.progress();

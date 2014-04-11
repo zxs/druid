@@ -67,7 +67,12 @@ public class HdfsDataSegmentPuller implements DataSegmentPuller
       throw new SegmentLoadingException(e, "Some IOException");
     }
     finally {
-      Closeables.closeQuietly(in);
+      try {
+        Closeables.close(in, true);
+      }
+      catch (IOException e) {
+        //
+      }
     }
   }
 

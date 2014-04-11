@@ -40,7 +40,6 @@ import java.util.Properties;
 public class PropertiesModule implements Module
 {
   private static final Logger log = new Logger(PropertiesModule.class);
-
   private final String propertiesFile;
 
   public PropertiesModule(String propertiesFile)
@@ -80,7 +79,13 @@ public class PropertiesModule implements Module
       log.wtf(e, "This can only happen if the .exists() call lied.  That's f'd up.");
     }
     finally {
-      Closeables.closeQuietly(stream);
+      try {
+        Closeables.close(stream, true);
+      }
+      catch (Throwable t) {
+        //
+      }
+
     }
 
     binder.bind(Properties.class).toInstance(props);

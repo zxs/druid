@@ -95,7 +95,12 @@ public class RealtimeManager implements QuerySegmentWalker
   public void stop()
   {
     for (FireChief chief : chiefs.values()) {
-      Closeables.closeQuietly(chief);
+      try {
+        Closeables.close(chief, true);
+      }
+      catch (IOException e) {
+        //
+      }
     }
   }
 
@@ -241,7 +246,12 @@ public class RealtimeManager implements QuerySegmentWalker
         normalExit = false;
         throw e;
       } finally {
-        Closeables.closeQuietly(firehose);
+        try {
+          Closeables.close(firehose, true);
+        }
+        catch (IOException e) {
+          //
+        }
         if (normalExit) {
           plumber.finishJob();
           plumber = null;

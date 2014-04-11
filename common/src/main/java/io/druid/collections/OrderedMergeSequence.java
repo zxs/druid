@@ -70,7 +70,12 @@ public class OrderedMergeSequence<T> implements Sequence<T>
       return yielder.get();
     }
     finally {
-      Closeables.closeQuietly(yielder);
+      try {
+        Closeables.close(yielder, true);
+      }
+      catch (IOException e) {
+        Throwables.propagate(e);
+      }
     }
   }
 

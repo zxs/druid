@@ -43,6 +43,7 @@ import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.data.Stat;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -112,7 +113,12 @@ public class Announcer
       started = false;
 
       for (Map.Entry<String, PathChildrenCache> entry : listeners.entrySet()) {
-        Closeables.closeQuietly(entry.getValue());
+        try {
+          Closeables.close(entry.getValue(), true);
+        }
+        catch (IOException e) {
+          //
+        }
       }
 
       for (Map.Entry<String, ConcurrentMap<String, byte[]>> entry : announcements.entrySet()) {
@@ -358,7 +364,12 @@ public class Announcer
       cache.start();
     }
     catch (Exception e) {
-      Closeables.closeQuietly(cache);
+      try {
+        Closeables.close(cache, true);
+      }
+      catch (IOException e1) {
+        //
+      }
       throw Throwables.propagate(e);
     }
   }

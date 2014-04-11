@@ -73,14 +73,24 @@ public class GenericIndexed<T> implements Indexed<T>
         allowReverseLookup = false;
       }
       if (prevVal instanceof Closeable) {
-        Closeables.closeQuietly((Closeable) prevVal);
+        try {
+          Closeables.close((Closeable) prevVal, true);
+        }
+        catch (IOException e) {
+          //
+        }
       }
 
       prevVal = next;
       ++count;
     }
     if (prevVal instanceof Closeable) {
-      Closeables.closeQuietly((Closeable) prevVal);
+      try {
+        Closeables.close((Closeable) prevVal, true);
+      }
+      catch (IOException e) {
+        //
+      }
     }
 
     ByteArrayOutputStream headerBytes = new ByteArrayOutputStream(4 + (count * 4));
@@ -98,7 +108,7 @@ public class GenericIndexed<T> implements Indexed<T>
         valueBytes.write(bytes);
 
         if (object instanceof Closeable) {
-          Closeables.closeQuietly((Closeable) object);
+          Closeables.close((Closeable) object, true);
         }
       }
     }

@@ -365,7 +365,7 @@ public class RealtimeIndexTask extends AbstractTask
           log.makeAlert(e, "Failed to finish realtime task").emit();
         }
         finally {
-          Closeables.closeQuietly(firehose);
+          Closeables.close(firehose, true);
           toolbox.getMonitorScheduler().removeMonitor(metricsMonitor);
         }
       }

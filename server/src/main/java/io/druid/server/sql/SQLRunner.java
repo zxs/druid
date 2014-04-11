@@ -222,6 +222,6 @@ public class SQLRunner
       }
     }
 
-    Closeables.closeQuietly(stdInput);
+    Closeables.close(stdInput, true);
   }
 }

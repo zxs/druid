@@ -85,7 +85,7 @@ public class FlightsFirehoseFactory implements FirehoseFactory
             line = in.readLine();
 
             if (line == null) {
-              Closeables.closeQuietly(in);
+              Closeables.close(in, true);
               in = null;
             }
 
@@ -139,7 +139,7 @@ public class FlightsFirehoseFactory implements FirehoseFactory
       @Override
       public void close() throws IOException
       {
-        Closeables.closeQuietly(in);
+        Closeables.close(in, true);
       }
     };
   }

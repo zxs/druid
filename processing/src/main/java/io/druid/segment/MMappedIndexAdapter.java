@@ -28,6 +28,7 @@ import io.druid.segment.data.IndexedInts;
 import io.druid.segment.data.IndexedLongs;
 import org.joda.time.Interval;
 
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -118,9 +119,19 @@ public class MMappedIndexAdapter implements IndexableAdapter
           {
             final boolean hasNext = currRow < numRows;
             if (!hasNext && !done) {
-              Closeables.closeQuietly(timestamps);
+              try {
+                Closeables.close(timestamps, true);
+              }
+              catch (IOException e) {
+                //
+              }
               for (IndexedFloats floatMetric : floatMetrics) {
-                Closeables.closeQuietly(floatMetric);
+                try {
+                  Closeables.close(floatMetric, true);
+                }
+                catch (IOException e) {
+                  //
+                }
               }
               done = true;
             }

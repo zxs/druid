@@ -114,7 +114,7 @@ public class S3DataSegmentPuller implements DataSegmentPuller
                   throw new IOException(String.format("Problem decompressing object[%s]", s3Obj), e);
                 }
                 finally {
-                  Closeables.closeQuietly(in);
+                  Closeables.close(in, true);
                 }
               }
               finally {

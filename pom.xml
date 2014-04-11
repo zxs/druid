@@ -39,7 +39,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <metamx.java-util.version>0.25.4</metamx.java-util.version>
+        <metamx.java-util.version>0.25.5-SNAPSHOT</metamx.java-util.version>
         <apache.curator.version>2.4.0</apache.curator.version>
         <druid.api.version>0.1.11</druid.api.version>
     </properties>
@@ -193,7 +193,7 @@
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
-                <version>14.0.1</version>
+                <version>16.0.1</version>
             </dependency>
             <dependency>
                 <groupId>com.google.inject</groupId>
@@ -332,8 +332,8 @@
             </dependency>
             <dependency>
                 <groupId>com.google.code.findbugs</groupId>
-                <artifactId>jsr305</artifactId>
-                <version>2.0.1</version>
+                <artifactId>annotations</artifactId>
+                <version>2.0.2</version>
             </dependency>
             <dependency>
                 <groupId>log4j</groupId>

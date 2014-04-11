@@ -196,7 +196,12 @@ public class ConvertProperties implements Runnable
     }
     finally {
       if (out != null) {
-        Closeables.closeQuietly(out);
+        try {
+          Closeables.close(out, true);
+        }
+        catch (IOException e) {
+          //
+        }
       }
     }
 

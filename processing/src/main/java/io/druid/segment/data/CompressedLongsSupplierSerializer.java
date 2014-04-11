@@ -110,7 +110,7 @@ public class CompressedLongsSupplierSerializer
       ByteStreams.copy(flattener.combineStreams(), out);
     }
     finally {
-      Closeables.closeQuietly(out);
+      Closeables.close(out, true);
     }
   }
 }
