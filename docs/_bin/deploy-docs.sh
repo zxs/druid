@@ -20,22 +20,31 @@ fi
 
 tmp=$(mktemp -d -t druid-docs-deploy)
 
+src=$tmp/docs
+target=$tmp/druidio
+
 echo "Using Version     [$version]"
 echo "Working directory [$tmp]"
 
-git clone git@github.com:druid-io/druid-io.github.io.git "$tmp"
+if [ "$version" == "latest" ]; then
+  tag="master"
+else
+  tag="druid-$version"
+fi
 
-target=$tmp/docs/$version
+mkdir -p $src $target
 
-mkdir -p $target
-rsync -a --delete "$docs/content/" $target
+git -C "$docs/content" archive --format tar "$tag" . | tar xf - -C$src
+git clone --depth 1 git@github.com:druid-io/druid-io.github.io.git $target
+
+rsync -a --delete "$src/" $target/docs/$version
 
 branch=update-docs-$version
 
-git -C $tmp checkout  -b $branch
-git -C $tmp add -A .
-git -C $tmp commit -m "Update $version docs"
-git -C $tmp push origin $branch
+git -C $target checkout -b $branch
+git -C $target add -A .
+git -C $target commit -m "Update $version docs"
+git -C $target push origin $branch
 
 if [ -n "$GIT_TOKEN" ]; then
 curl -u "$GIT_TOKEN:x-oauth-basic" -XPOST -d@- \
