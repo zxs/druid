@@ -30,10 +30,14 @@ import com.fasterxml.jackson.databind.Module;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Binder;
+import com.google.inject.Inject;
+import com.google.inject.Key;
+import com.google.inject.Provider;
 import com.google.inject.Provides;
 import io.druid.guice.Binders;
 import io.druid.guice.JsonConfigProvider;
 import io.druid.guice.LazySingleton;
+import io.druid.guice.PolyBind;
 import io.druid.initialization.DruidModule;
 import org.jets3t.service.impl.rest.httpclient.RestS3Service;
 import org.jets3t.service.security.AWSCredentials;
@@ -58,7 +62,10 @@ public class S3StorageDruidModule implements DruidModule
     Binders.dataSegmentPullerBinder(binder).addBinding("s3_zip").to(S3DataSegmentPuller.class).in(LazySingleton.class);
     Binders.dataSegmentKillerBinder(binder).addBinding("s3_zip").to(S3DataSegmentKiller.class).in(LazySingleton.class);
     Binders.dataSegmentMoverBinder(binder).addBinding("s3_zip").to(S3DataSegmentMover.class).in(LazySingleton.class);
-    Binders.dataSegmentArchiverBinder(binder).addBinding("s3_zip").to(S3DataSegmentArchiver.class).in(LazySingleton.class);
+    Binders.dataSegmentArchiverBinder(binder)
+           .addBinding("s3_zip")
+           .to(S3DataSegmentArchiver.class)
+           .in(LazySingleton.class);
     Binders.dataSegmentPusherBinder(binder).addBinding("s3").to(S3DataSegmentPusher.class).in(LazySingleton.class);
     JsonConfigProvider.bind(binder, "druid.storage", S3DataSegmentPusherConfig.class);
     JsonConfigProvider.bind(binder, "druid.storage", S3DataSegmentArchiverConfig.class);
@@ -66,49 +73,134 @@ public class S3StorageDruidModule implements DruidModule
     Binders.taskLogsBinder(binder).addBinding("s3").to(S3TaskLogs.class);
     JsonConfigProvider.bind(binder, "druid.indexer.logs", S3TaskLogsConfig.class);
     binder.bind(S3TaskLogs.class).in(LazySingleton.class);
+
+    // Polybinds for credentials
+    PolyBind.createChoice(
+        binder,
+        "druid.s3.credential.type",
+        Key.get(AWSCredentialsProvider.class),
+        Key.get(AnonymousAwsCredentials.class)
+    );
+    PolyBind.optionBinder(binder, Key.get(AWSCredentialsProvider.class))
+            .addBinding("config")
+            .toProvider(ConfigDrivenAwsCredentialsConfigProviderProvider.class)
+            .in(LazySingleton.class);
+    PolyBind.optionBinder(binder, Key.get(AWSCredentialsProvider.class))
+            .addBinding("file")
+            .toProvider(ConfigDrivenAwsCredentialsConfigProviderProvider.class)
+            .in(LazySingleton.class);
+    PolyBind.optionBinder(binder, Key.get(AWSCredentialsProvider.class))
+            .addBinding("environment")
+            .toProvider(EnvironmentVariableCredentialsProviderProvider.class)
+            .in(LazySingleton.class);
+    PolyBind.optionBinder(binder, Key.get(AWSCredentialsProvider.class))
+            .addBinding("system")
+            .toProvider(SystemPropertiesCredentialsProviderProvider.class)
+            .in(LazySingleton.class);
+    PolyBind.optionBinder(binder, Key.get(AWSCredentialsProvider.class))
+            .addBinding("profile")
+            .toProvider(ProfileCredentialsProviderProvider.class)
+            .in(LazySingleton.class);
+    PolyBind.optionBinder(binder, Key.get(AWSCredentialsProvider.class))
+            .addBinding("instance-profile")
+            .toProvider(InstanceProfileCredentialsProviderProvider.class)
+            .in(LazySingleton.class);
+    binder.bind(AWSCredentialsProviderChain.class)
+          .toProvider(CredentialChainProvider.class)
+          .in(LazySingleton.class);
   }
 
-  private static class ConfigDrivenAwsCredentialsConfigProvider implements AWSCredentialsProvider 
+  protected static class AnonymousAwsCredentials implements AWSCredentialsProvider
   {
-    private AWSCredentialsConfig config;
 
-    public ConfigDrivenAwsCredentialsConfigProvider(AWSCredentialsConfig config) {
-      this.config = config;
-    }
-    
     @Override
-    public com.amazonaws.auth.AWSCredentials getCredentials() 
+    public com.amazonaws.auth.AWSCredentials getCredentials()
     {
-        if (!Strings.isNullOrEmpty(config.getAccessKey()) && !Strings.isNullOrEmpty(config.getSecretKey())) {
-          return new com.amazonaws.auth.AWSCredentials() {
-            @Override
-            public String getAWSAccessKeyId() {
-              return config.getAccessKey();
-            }
-
-            @Override
-            public String getAWSSecretKey() {
-              return config.getSecretKey();
-            }
-          };
+      return new com.amazonaws.auth.AWSCredentials()
+      {
+        @Override
+        public String getAWSAccessKeyId()
+        {
+          return null;
         }
-        throw new AmazonClientException("Unable to load AWS credentials from druid AWSCredentialsConfig");
+
+        @Override
+        public String getAWSSecretKey()
+        {
+          return null;
+        }
+      };
     }
-    
+
     @Override
-    public void refresh() {}
+    public void refresh()
+    {
+      // NOOP
+    }
   }
-  
-  private static class LazyFileSessionCredentialsProvider implements AWSCredentialsProvider 
+
+  protected static class ConfigDrivenAwsCredentialsConfigProviderProvider implements Provider<AWSCredentialsProvider>
   {
-    private AWSCredentialsConfig config;
-    private FileSessionCredentialsProvider provider;
-    
-    public LazyFileSessionCredentialsProvider(AWSCredentialsConfig config) {
+    @Inject
+    public ConfigDrivenAwsCredentialsConfigProviderProvider(
+        final AWSCredentialsConfig config
+    )
+    {
       this.config = config;
     }
-    
-    private FileSessionCredentialsProvider getUnderlyingProvider() {
+
+    private final AWSCredentialsConfig config;
+
+    @Override
+    public AWSCredentialsProvider get()
+    {
+      return new AWSCredentialsProvider()
+      {
+        @Override
+        public com.amazonaws.auth.AWSCredentials getCredentials()
+        {
+          if (!Strings.isNullOrEmpty(config.getAccessKey()) && !Strings.isNullOrEmpty(config.getSecretKey())) {
+            return new com.amazonaws.auth.AWSCredentials()
+            {
+              @Override
+              public String getAWSAccessKeyId()
+              {
+                return config.getAccessKey();
+              }
+
+              @Override
+              public String getAWSSecretKey()
+              {
+                return config.getSecretKey();
+              }
+            };
+          }
+          throw new AmazonClientException("Unable to load AWS credentials from druid AWSCredentialsConfig");
+        }
+
+        @Override
+        public void refresh() {}
+
+      };
+    }
+  }
+
+  protected static class LazyFileSessionCredentialsProviderProvider implements Provider<AWSCredentialsProvider>
+  {
+    @Inject
+    public LazyFileSessionCredentialsProviderProvider(
+        AWSCredentialsConfig config
+    )
+    {
+
+      this.config = config;
+    }
+
+    private final AWSCredentialsConfig config;
+    private FileSessionCredentialsProvider provider;
+
+    private FileSessionCredentialsProvider getUnderlyingProvider()
+    {
       if (provider == null) {
         synchronized (config) {
           if (provider == null) {
@@ -118,43 +210,100 @@ public class S3StorageDruidModule implements DruidModule
       }
       return provider;
     }
-    
-    @Override
-    public com.amazonaws.auth.AWSCredentials getCredentials() 
-    {
-      return getUnderlyingProvider().getCredentials();
-    }
 
     @Override
-    public void refresh() {
-      getUnderlyingProvider().refresh();
+    public AWSCredentialsProvider get()
+    {
+      return new AWSCredentialsProvider()
+      {
+        @Override
+        public com.amazonaws.auth.AWSCredentials getCredentials()
+        {
+          return getUnderlyingProvider().getCredentials();
+        }
+
+        @Override
+        public void refresh()
+        {
+          getUnderlyingProvider().refresh();
+        }
+      };
     }
   }
-  
-  @Provides
-  @LazySingleton
-  public AWSCredentialsProvider getAWSCredentialsProvider(final AWSCredentialsConfig config)
+
+  protected static class EnvironmentVariableCredentialsProviderProvider
+      implements Provider<EnvironmentVariableCredentialsProvider>
   {
-    return new AWSCredentialsProviderChain(
-           new ConfigDrivenAwsCredentialsConfigProvider(config),
-           new LazyFileSessionCredentialsProvider(config),
-           new EnvironmentVariableCredentialsProvider(),
-           new SystemPropertiesCredentialsProvider(),
-           new ProfileCredentialsProvider(),
-           new InstanceProfileCredentialsProvider());
+    @Override
+    public EnvironmentVariableCredentialsProvider get()
+    {
+      return new EnvironmentVariableCredentialsProvider();
+    }
+  }
+
+  protected static class SystemPropertiesCredentialsProviderProvider
+      implements Provider<SystemPropertiesCredentialsProvider>
+  {
+    @Override
+    public SystemPropertiesCredentialsProvider get()
+    {
+      return new SystemPropertiesCredentialsProvider();
+    }
+  }
+
+  protected static class ProfileCredentialsProviderProvider implements Provider<ProfileCredentialsProvider>
+  {
+    @Override
+    public ProfileCredentialsProvider get()
+    {
+      return new ProfileCredentialsProvider();
+    }
+  }
+
+  protected static class InstanceProfileCredentialsProviderProvider
+      implements Provider<InstanceProfileCredentialsProvider>
+  {
+    @Override
+    public InstanceProfileCredentialsProvider get()
+    {
+      return new InstanceProfileCredentialsProvider();
+    }
+  }
+
+  protected static class CredentialChainProvider implements Provider<AWSCredentialsProviderChain>
+  {
+    final AWSCredentialsProvider provider;
+
+    @Inject
+    public CredentialChainProvider(
+        AWSCredentialsProvider provider
+    )
+    {
+
+      this.provider = provider;
+    }
+
+
+    @Override
+    public AWSCredentialsProviderChain get()
+    {
+      return new AWSCredentialsProviderChain(provider);
+    }
   }
 
   @Provides
   @LazySingleton
   public RestS3Service getRestS3Service(AWSCredentialsProvider provider)
   {
-    if(provider.getCredentials() instanceof com.amazonaws.auth.AWSSessionCredentials) {
+    if (provider.getCredentials() instanceof com.amazonaws.auth.AWSSessionCredentials) {
       return new RestS3Service(new AWSSessionCredentialsAdapter(provider));
     } else {
-      return new RestS3Service(new AWSCredentials(
-          provider.getCredentials().getAWSAccessKeyId(),
-          provider.getCredentials().getAWSSecretKey()
-      ));
+      return new RestS3Service(
+          new AWSCredentials(
+              provider.getCredentials().getAWSAccessKeyId(),
+              provider.getCredentials().getAWSSecretKey()
+          )
+      );
     }
   }
 }
