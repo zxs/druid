@@ -32,10 +32,12 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.security.UserGroupInformation;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URLClassLoader;
 
 /**
  */
@@ -70,6 +72,7 @@ public class HdfsDataSegmentPusher implements DataSegmentPusher
   {
     final String storageDir = DataSegmentPusherUtil.getHdfsStorageDir(segment);
     Path outFile = new Path(String.format("%s/%s/index.zip", config.getStorageDirectory(), storageDir));
+    Thread.currentThread().setContextClassLoader(hadoopConfig.getClassLoader());
     FileSystem fs = outFile.getFileSystem(hadoopConfig);
 
     fs.mkdirs(outFile.getParent());

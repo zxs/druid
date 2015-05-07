@@ -45,7 +45,7 @@ import io.druid.segment.realtime.FireDepartmentMetrics;
 import io.druid.segment.realtime.SegmentPublisher;
 import io.druid.server.coordination.DataSegmentAnnouncer;
 import io.druid.timeline.DataSegment;
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.apache.commons.lang.mutable.MutableBoolean;
 import org.easymock.EasyMock;
 import org.joda.time.DateTime;

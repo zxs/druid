@@ -1,0 +1,9 @@
+{
+	"druid": 
+	{
+		"destination": "/usr/bin/druid",
+		"source": "druid",
+		"priority": 10,
+		"isDirectory": false
+	}
+}

@@ -21,6 +21,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.KeyDeserializer;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -46,7 +47,8 @@ class JodaStuff
     module.addSerializer(DateTime.class, ToStringSerializer.instance);
     module.addDeserializer(Interval.class, new JodaStuff.IntervalDeserializer());
     module.addSerializer(Interval.class, ToStringSerializer.instance);
-    module.addDeserializer(Period.class, new PeriodDeserializer());
+    JsonDeserializer<?> deser = new PeriodDeserializer(true);
+    module.addDeserializer(Period.class, (JsonDeserializer<Period>) deser);
     module.addSerializer(Period.class, ToStringSerializer.instance);
     module.addDeserializer(Duration.class, new DurationDeserializer());
     module.addSerializer(Duration.class, ToStringSerializer.instance);
@@ -104,7 +106,7 @@ class JodaStuff
                                       .withOffsetParsed()
                                       .parseDateTime(str);
           }
-          throw ctxt.mappingException(getValueClass());
+          throw ctxt.mappingException(handledType());
       }
   }
 }

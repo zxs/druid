@@ -1,0 +1,45 @@
+{
+	"schema_version": 1,
+	"name": "DRUID",
+	"version": "${druid.version}",
+	"setActiveSymlink": true,
+	"scripts": {
+            "defines": "druid_env.sh"
+	},
+
+	"packages": 
+	[
+		{
+			"name": "druid",
+			"version": "${druid.version}"
+		}
+	],
+
+	"components": 
+	[
+		{
+			"name": "druid",
+			"version": "${druid.version}"
+		}
+	],
+
+	"provides": 
+	[
+		"druid"
+	],
+
+	"users": 
+	{
+		"druid": 
+		{
+			"longname": "Druid",
+			"home": "/var/lib/druid",
+			"shell": "/sbin/nologin",
+			"extra_groups": [ ]
+		}
+	},
+	"groups": 
+	[
+		
+	]
+}

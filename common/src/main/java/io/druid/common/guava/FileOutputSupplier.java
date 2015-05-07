@@ -17,7 +17,7 @@
 
 package io.druid.common.guava;
 
-import com.google.common.io.OutputSupplier;
+import com.google.common.io.ByteSink;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -26,7 +26,7 @@ import java.io.OutputStream;
 
 /**
 */
-public class FileOutputSupplier implements OutputSupplier<OutputStream>
+public class FileOutputSupplier extends ByteSink
 {
   private final File file;
   private final boolean append;
@@ -38,8 +38,7 @@ public class FileOutputSupplier implements OutputSupplier<OutputStream>
   }
 
   @Override
-  public OutputStream getOutput() throws IOException
-  {
+  public OutputStream openStream() throws IOException {
     return new FileOutputStream(file, append);
   }
 

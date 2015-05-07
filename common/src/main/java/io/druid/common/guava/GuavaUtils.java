@@ -20,63 +20,50 @@ package io.druid.common.guava;
 import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
-import com.google.common.io.CharStreams;
-import com.google.common.io.InputSupplier;
+import com.google.common.io.CharSource;
 
 import javax.annotation.Nullable;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.Arrays;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
 
 /**
  */
-public class GuavaUtils
-{
-  public static Function<String, String> formatFunction(final String formatString)
-  {
-    return new Function<String, String>()
-    {
+public class GuavaUtils {
+  public static Function<String, String> formatFunction(final String formatString) {
+    return new Function<String, String>() {
       @Override
-      public String apply(@Nullable String input)
-      {
+      public String apply(@Nullable String input) {
         return String.format(formatString, input);
       }
     };
   }
 
-  public static InputSupplier<BufferedReader> joinFiles(final File... files)
-  {
+  public static CharSource joinFiles(final File... files) {
     return joinFiles(Arrays.asList(files));
   }
 
-  public static InputSupplier<BufferedReader> joinFiles(final List<File> files)
-  {
+  public static CharSource joinFiles(final List<File> files) {
 
-    return new InputSupplier<BufferedReader>()
-    {
+    return new CharSource() {
       @Override
-      public BufferedReader getInput() throws IOException
-      {
-        return new BufferedReader(
-            CharStreams.join(
+      public Reader openStream() throws IOException {
+        return
+            CharSource.concat(
                 Iterables.transform(
                     files,
-                    new Function<File, InputSupplier<InputStreamReader>>()
-                    {
+                    new Function<File, CharSource>() {
                       @Override
-                      public InputSupplier<InputStreamReader> apply(final File input)
-                      {
-                        return new InputSupplier<InputStreamReader>()
-                        {
+                      public CharSource apply(final File input) {
+                        return new CharSource() {
                           @Override
-                          public InputStreamReader getInput() throws IOException
-                          {
+                          public Reader openStream() throws IOException {
                             InputStream baseStream = new FileInputStream(input);
                             if (input.getName().endsWith(".gz")) {
                               baseStream = new GZIPInputStream(baseStream);
@@ -88,8 +75,7 @@ public class GuavaUtils
                       }
                     }
                 )
-            ).getInput()
-        );
+            ).openStream();
       }
     };
   }

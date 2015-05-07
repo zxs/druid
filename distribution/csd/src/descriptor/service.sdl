@@ -1,0 +1,1216 @@
+{
+  "name": "DRUID",
+  "label": "Druid",
+  "description": "An open-source analytics data store designed for business intelligence (OLAP) queries on timeseries data",
+  "version": "0.1",
+  "runAs": {
+    "user": "druid",
+    "group": "druid"
+  },
+  "parcel": {
+    "requiredTags": ["druid"]
+  },
+  "inExpressWizard": false,
+  "icon": "images/icon.png",
+  "serviceDependencies": [
+    {
+      "name": "ZOOKEEPER",
+      "required": "true"
+    },
+    {
+      "name": "HDFS",
+      "required": "true"
+    }
+  ],
+  "hdfsDirs": [
+    {
+      "name": "CreateHdfsDirCommand",
+      "label": "Create Druid Home Dir",
+      "description": "Creates the Druid home directory in HDFS.",
+      "directoryDescription": "Druid HDFS home directory",
+      "path": "${deep_storage_directory}",
+      "permissions": "0751"
+    },
+    {
+      "name": "CreateDruidUserDirCommand",
+      "label": "Create Druid User Dir",
+      "description": "Creates the Druid user directory in HDFS.",
+      "directoryDescription": "Druid HDFS user directory",
+      "path": "/user/${user}",
+      "permissions": "0750"
+    }
+  ],
+  "commands": [
+    {
+      "name": "DruidInitializeMetadataStorageCommand",
+      "label": "Initialize Metadata Storage",
+      "description": "Initialize Metadata Storage",
+      "roleName": "DRUID_COORDINATOR",
+      "roleCommand": "metadata_init",
+      "runMode": "single"
+    }
+  ],
+  "serviceInit": {
+    "preStartSteps": [
+      {
+        "commandName": "DruidInitializeMetadataStorageCommand"
+      },
+      {
+        "commandName": "CreateHdfsDirCommand"
+      },
+      {
+        "commandName": "CreateDruidUserDirCommand"
+      }
+    ]
+  },
+  "parameters": [
+    {
+      "name": "extensions_remoteRepositories",
+      "label": "Extensions Remote Repositories",
+      "description": "The list of remote repositories to download extensions",
+      "configName": "druid.extensions.remoteRepositories",
+      "required": "false",
+      "type": "string_array",
+      "separator": "\",\"",
+      "default": [
+        "http://115.231.158.65:58200/artifactory/repo/"
+      ]
+    },
+    {
+      "name": "extensions_coordinates",
+      "label": "Extensions Coordinates",
+      "description": "The list of extensions to include.",
+      "configName": "druid.extensions.coordinates",
+      "required": "false",
+      "type": "string_array",
+      "separator": "\",\"",
+      "default": [
+        "io.druid.extensions:druid-examples",
+        "io.druid.extensions:druid-kafka-eight",
+        "io.druid.extensions:mysql-metadata-storage"
+      ]
+    },
+    {
+      "name": "zk_paths_base",
+      "label": "druid.zk.paths.base",
+      "description": "Base Zookeeper path.",
+      "configName": "druid.zk.paths.base",
+      "configurableInWizard": true,
+      "required": "true",
+      "type": "string",
+      "default": "/druid/prod"
+    },
+    {
+      "name": "discovery_curator_path",
+      "label": "druid.discovery.curator.path",
+      "description": "Services announce themselves under this ZooKeeper path.",
+      "configName": "druid.discovery.curator.path",
+      "configurableInWizard": true,
+      "required": "true",
+      "type": "string",
+      "default": "/druid/prod"
+    },
+    {
+      "name": "request_logging_type",
+      "label": "druid.request.logging.type",
+      "description": "How to log every request.",
+      "configName": "druid.request.logging.type",
+      "required": "true",
+      "type": "string_enum",
+      "validValues": [
+        "noop",
+        "file",
+        "emitter"
+      ],
+      "default": "noop"
+    },
+    {
+      "name": "metadata_storage_type",
+      "label": "Metadata Storage Type",
+      "description": "The type of metadata storage to use",
+      "configName": "druid.metadata.storage.type",
+      "type": "string_enum",
+      "configurableInWizard": true,
+      "required": "true",
+      "validValues": [
+        "derby",
+        "mysql",
+        "postgres"
+      ],
+      "default": "mysql"
+    },
+    {
+      "name": "metadata_storage_connector_connectURI",
+      "label": "Metadata Storage Connector ConnectURI",
+      "description": "The URI of metadata storage connector",
+      "configName": "druid.metadata.storage.connector.connectURI",
+      "configurableInWizard": true,
+      "required": "true",
+      "type": "string",
+      "default": "jdbc:mysql://localhost:3306/druid?characterEncoding=UTF-8"
+    },
+    {
+      "name": "metadata_storage_connector_user",
+      "label": "Metadata Storage Connector User",
+      "description": "The username to connect with.",
+      "configName": "druid.metadata.storage.connector.user",
+      "configurableInWizard": true,
+      "required": "true",
+      "type": "string",
+      "default": "druid"
+    },
+    {
+      "name": "metadata_storage_connector_password",
+      "label": "Metadata Storage Connector Password",
+      "description": "The password to connect with.",
+      "configName": "druid.metadata.storage.connector.password",
+      "configurableInWizard": true,
+      "required": "true",
+      "type": "password",
+      "default": "druid"
+    },
+    {
+      "name": "deep_storage_type",
+      "label": "Deep Storage Type",
+      "description": "The type of deep storage to use",
+      "configName": "druid.storage.type",
+      "type": "string_enum",
+      "configurableInWizard": true,
+      "required": "true",
+      "validValues": [
+        "noop",
+        "local",
+        "s3",
+        "hdfs",
+        "cassandra"
+      ],
+      "default": "hdfs"
+    },
+    {
+      "name": "deep_storage_directory",
+      "label": "Deep Storage Directory",
+      "description": "Directory to use as deep storage.",
+      "configName": "druid.storage.storageDirectory",
+      "type": "string",
+      "configurableInWizard": true,
+      "required": "true",
+      "default": "/druid"
+    },
+    {
+      "name": "cache_type",
+      "label": "Query Cache Type",
+      "description": "The type of cache to use for queries.",
+      "configName": "druid.cache.type",
+      "type": "string_enum",
+      "required": "true",
+      "validValues": [
+        "local",
+        "memcached"
+      ],
+      "default": "local"
+    }
+  ],
+  "rolesWithExternalLinks": [
+    "DRUID_BROKER",
+    "DRUID_COORDINATOR",
+    "DRUID_HISTORICAL",
+    "DRUID_REALTIME",
+    "DRUID_OVERLORD",
+    "DRUID_MIDDLE_MANAGER"
+  ],
+  "roles": [
+    {
+      "name": "DRUID_COORDINATOR",
+      "label": "Coordinator",
+      "pluralLabel": "Coordinators",
+      "startRunner": {
+        "program": "scripts/control.sh",
+        "args": [
+          "start_coordinator"
+        ],
+        "environmentVariables": {
+          "DRUID_ROLE_CFG": "runtime.properties",
+          "DRUID_ROLE_JVM_OPTS": "${jvm_config}",
+          "LOG4J2_LOG_DIR": "/var/log/druid",
+          "LOG4J2_LOG_FILE": "coordinator.log",
+          "LOG4J2_THRESHOLD": "${coordinator_log_threshold}",
+          "LOG4J2_MAX_SIZE": "${coordinator_log_max_size}MB",
+          "LOG4J2_MAX_BACKUPS": "${coordinator_log_max_backups}"
+        }
+      },
+      "commands": [
+        {
+          "name": "metadata_init",
+          "label": "Initialize Metadata Storage",
+          "description": "Initialize  Metadata Storage",
+          "expectedExitCodes": [0],
+          "requiredRoleState": "stopped",
+          "commandRunner": {
+            "program": "scripts/control.sh",
+            "args": [
+              "init_metadata"
+            ],
+            "environmentVariables": {
+              "CONNECTOR_URI": "${metadata_storage_connector_connectURI}",
+              "CONNECTOR_USER": "${metadata_storage_connector_user}",
+              "CONNECTOR_PASSWD": "${metadata_storage_connector_password}",
+              "LOG4J2_LOG_DIR": "/var/log/druid",
+              "LOG4J2_LOG_FILE": "coordinator-init_metadata.log",
+              "LOG4J2_THRESHOLD": "${coordinator_log_threshold}",
+              "LOG4J2_MAX_SIZE": "${coordinator_log_max_size}MB",
+              "LOG4J2_MAX_BACKUPS": "${coordinator_log_max_backups}"
+            }
+          }
+        }
+      ],
+      "externalLink": {
+        "name": "coordinator_web_ui",
+        "label": "Coordinator Web UI",
+        "url": "http://${host}:${coordinator_bind_port}"
+      },
+      "topology": {"minInstances": 1},
+      "logging": {
+        "dir": "/var/log/druid",
+        "filename": "coordinator.log",
+        "isModifiable": false,
+        "loggingType": "other"
+      },
+      "parameters": [
+        {
+          "name": "coordinator_bind_address",
+          "label": "Coordinator Bind Address",
+          "description": "Coordinator server hostname to bind to",
+          "configName": "druid.host",
+          "required": "true",
+          "type": "string",
+          "default": "0.0.0.0"
+        },
+        {
+          "name": "coordinator_bind_port",
+          "label": "Coordinator Bind Port",
+          "description": "Coordinator server port",
+          "configName": "druid.port",
+          "required": "true",
+          "type": "port",
+          "default": 52203
+        },
+        {
+          "name": "coordinator_service_name",
+          "label": "Coordinator Service Name",
+          "description": "Coordinator service name",
+          "configName": "druid.service",
+          "required": "true",
+          "type": "string",
+          "default": "druid/prod/coordinator"
+        },
+        {
+          "name": "coordinator_log_threshold",
+          "label": "Coordinator Service Logging Threshold",
+          "description": "The minimum log level for Druid Coordinator Service logs (via Log4j2)",
+          "required": true,
+          "default": "WARN",
+          "type": "string_enum",
+          "validValues": [
+            "TRACE",
+            "DEBUG",
+            "INFO",
+            "WARN",
+            "ERROR",
+            "FATAL"
+          ]
+        },
+        {
+          "name": "coordinator_log_max_size",
+          "label": "Coordinator Service Max Log Size",
+          "description": "The maximum size, in megabytes, per log file for Druid Coordinator Service logs (via log4j2)",
+          "required": true,
+          "type": "long",
+          "unit": "megabytes",
+          "default": 200
+        },
+        {
+          "name": "coordinator_log_max_backups",
+          "label": "Coordinator Service Max Log File Backups",
+          "description": "The maximum number of rolled log files to keep for Druid Coordinator Service logs (via log4j2)",
+          "required": true,
+          "type": "long",
+          "default": 10
+        },
+        {
+          "name": "jvm_config",
+          "label": "jvm_config",
+          "description": "jvm_config",
+          "configName": "jvm.config",
+          "required": "false",
+          "type": "string_array",
+          "separator": " ",
+          "default": [
+            "-server",
+            "-Xmx10g",
+            "-Xms10g",
+            "-XX:NewSize=512m",
+            "-XX:MaxNewSize=512m",
+            "-XX:+UseG1GC",
+            "-XX:+PrintGCDetails",
+            "-XX:+PrintGCTimeStamps",
+            "-Duser.timezone=UTC",
+            "-Dfile.encoding=UTF-8",
+            "-Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager",
+            "-Djava.io.tmpdir=/tmp/druid"
+          ]
+        }
+      ],
+      "configWriter": {
+        "generators": [
+          {
+            "filename": "config/runtime.properties",
+            "configFormat": "properties",
+            "excludedParams": [
+              "jvm_config",
+              "extensions_remoteRepositories",
+              "extensions_coordinates"
+            ],
+            "additionalConfigs": [
+              {
+                "key": "druid.host",
+                "value": "${host}"
+              },
+              {
+                "key": "druid.zk.service.host",
+                "value": "{{ZK_QUORUM}}"
+              },
+              {
+                "key": "druid.extensions.remoteRepositories",
+                "value": "[\"${extensions_remoteRepositories}\"]"
+              },
+              {
+                "key": "druid.extensions.coordinates",
+                "value": "[\"${extensions_coordinates}\"]"
+              }
+            ]
+          }
+        ],
+        "auxConfigGenerators": [
+          {
+            "filename": "config/log4j2.yml",
+            "sourceFilename": "aux/log4j2.yml"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DRUID_BROKER",
+      "label": "Broker",
+      "pluralLabel": "Brokers",
+      "startRunner": {
+        "program": "scripts/control.sh",
+        "args": [
+          "start_broker"
+        ],
+        "environmentVariables": {
+          "DRUID_ROLE_CFG": "runtime.properties",
+          "DRUID_ROLE_JVM_OPTS": "${jvm_config}",
+          "LOG4J2_LOG_DIR": "/var/log/druid",
+          "LOG4J2_LOG_FILE": "broker.log",
+          "LOG4J2_THRESHOLD": "${broker_log_threshold}",
+          "LOG4J2_MAX_SIZE": "${broker_log_max_size}MB",
+          "LOG4J2_MAX_BACKUPS": "${broker_log_max_backups}"
+        }
+      },
+      "commands": [
+      ],
+      "externalLink": {
+        "name": "broker_web_ui",
+        "label": "Broker Web UI",
+        "url": "http://${host}:${broker_bind_port}"
+      },
+      "topology": {"minInstances": 1},
+      "logging": {
+        "dir": "/var/log/druid",
+        "filename": "broker.log",
+        "isModifiable": false,
+        "loggingType": "other"
+      },
+      "parameters": [
+        {
+          "name": "broker_bind_address",
+          "label": "Broker Bind Address",
+          "description": "Broker server hostname to bind to",
+          "configName": "druid.host",
+          "required": "true",
+          "type": "string",
+          "default": "0.0.0.0"
+        },
+        {
+          "name": "broker_bind_port",
+          "label": "Broker Bind Port",
+          "description": "Broker server port",
+          "configName": "druid.port",
+          "required": "true",
+          "type": "port",
+          "default": 52200
+        },
+        {
+          "name": "broker_service_name",
+          "label": "Broker Service Name",
+          "description": "Broker service name",
+          "configName": "druid.service",
+          "required": "true",
+          "type": "string",
+          "default": "druid/prod/broker"
+        },
+        {
+          "name": "broker_log_threshold",
+          "label": "Broker Service Logging Threshold",
+          "description": "The minimum log level for Druid Broker Service logs (via Log4j2)",
+          "required": true,
+          "default": "WARN",
+          "type": "string_enum",
+          "validValues": [
+            "TRACE",
+            "DEBUG",
+            "INFO",
+            "WARN",
+            "ERROR",
+            "FATAL"
+          ]
+        },
+        {
+          "name": "broker_log_max_size",
+          "label": "Broker Service Max Log Size",
+          "description": "The maximum size, in megabytes, per log file for Druid Broker Service logs (via log4j2)",
+          "required": true,
+          "type": "long",
+          "unit": "megabytes",
+          "default": 200
+        },
+        {
+          "name": "broker_log_max_backups",
+          "label": "Broker Service Max Log File Backups",
+          "description": "The maximum number of rolled log files to keep for Druid Broker Service logs (via log4j2)",
+          "required": true,
+          "type": "long",
+          "default": 10
+        },
+        {
+          "name": "jvm_config",
+          "label": "jvm_config",
+          "description": "jvm_config",
+          "configName": "jvm.config",
+          "required": "true",
+          "type": "string_array",
+          "separator": " ",
+          "default": [
+            "-server",
+            "-Xmx25g",
+            "-Xms25g",
+            "-XX:NewSize=6g",
+            "-XX:MaxNewSize=6g",
+            "-XX:MaxDirectMemorySize=64g",
+            "-XX:+UseConcMarkSweepGC",
+            "-XX:+PrintGCDetails",
+            "-XX:+PrintGCTimeStamps",
+            "-Duser.timezone=UTC",
+            "-Dfile.encoding=UTF-8",
+            "-Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager",
+            "-Djava.io.tmpdir=/tmp/druid"
+          ]
+        }
+      ],
+      "configWriter": {
+        "generators": [
+          {
+            "filename": "config/runtime.properties",
+            "configFormat": "properties",
+            "excludedParams": [
+              "jvm_config",
+              "extensions_remoteRepositories",
+              "extensions_coordinates"
+            ],
+            "additionalConfigs": [
+              {
+                "key": "druid.host",
+                "value": "${host}"
+              },
+              {
+                "key": "druid.zk.service.host",
+                "value": "{{ZK_QUORUM}}"
+              },
+              {
+                "key": "druid.extensions.remoteRepositories",
+                "value": "[\"${extensions_remoteRepositories}\"]"
+              },
+              {
+                "key": "druid.extensions.coordinates",
+                "value": "[\"${extensions_coordinates}\"]"
+              }
+            ]
+          }
+        ],
+        "auxConfigGenerators": [
+          {
+            "filename": "config/log4j2.yml",
+            "sourceFilename": "aux/log4j2.yml"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DRUID_HISTORICAL",
+      "label": "Historical",
+      "pluralLabel": "Historicals",
+      "startRunner": {
+        "program": "scripts/control.sh",
+        "args": [
+          "start_historical"
+        ],
+        "environmentVariables": {
+          "DRUID_ROLE_CFG": "runtime.properties",
+          "DRUID_ROLE_JVM_OPTS": "${jvm_config}",
+          "LOG4J2_LOG_DIR": "/var/log/druid",
+          "LOG4J2_LOG_FILE": "historical.log",
+          "LOG4J2_THRESHOLD": "${historical_log_threshold}",
+          "LOG4J2_MAX_SIZE": "${historical_log_max_size}MB",
+          "LOG4J2_MAX_BACKUPS": "${historical_log_max_backups}"
+        }
+      },
+      "commands": [
+      ],
+      "externalLink": {
+        "name": "historical_web_ui",
+        "label": "Historical Web UI",
+        "url": "http://${host}:${historical_bind_port}"
+      },
+      "topology": {
+        "minInstances": 1
+      },
+      "logging": {
+        "dir": "/var/log/druid",
+        "filename": "historical.log",
+        "isModifiable": false,
+        "loggingType": "other"
+      },
+      "parameters": [
+        {
+          "name": "historical_bind_address",
+          "label": "Historical Bind Address",
+          "description": "Historical server hostname to bind to",
+          "configName": "druid.host",
+          "required": "true",
+          "type": "string",
+          "default": "0.0.0.0"
+        },
+        {
+          "name": "historical_bind_port",
+          "label": "Historical Bind Port",
+          "description": "Historical server port",
+          "configName": "druid.port",
+          "required": "true",
+          "type": "port",
+          "default": 52202
+        },
+        {
+          "name": "historical_service_name",
+          "label": "Historical Service Name",
+          "description": "Historical service name",
+          "configName": "druid.service",
+          "required": "true",
+          "type": "string",
+          "default": "druid/prod/historical"
+        },
+        {
+          "name": "historical_log_threshold",
+          "label": "Historical Service Logging Threshold",
+          "description": "The minimum log level for Druid Historical Service logs (via Log4j2)",
+          "required": true,
+          "default": "WARN",
+          "type": "string_enum",
+          "validValues": [
+            "TRACE",
+            "DEBUG",
+            "INFO",
+            "WARN",
+            "ERROR",
+            "FATAL"
+          ]
+        },
+        {
+          "name": "historical_log_max_size",
+          "label": "Historical Service Max Log Size",
+          "description": "The maximum size, in megabytes, per log file for Druid Historical Service logs (via log4j2)",
+          "required": true,
+          "type": "long",
+          "unit": "megabytes",
+          "default": 200
+        },
+        {
+          "name": "historical_log_max_backups",
+          "label": "Historical Service Max Log File Backups",
+          "description": "The maximum number of rolled log files to keep for Druid Historical Service logs (via log4j2)",
+          "required": true,
+          "type": "long",
+          "default": 10
+        },
+        {
+          "name": "jvm_config",
+          "label": "jvm_config",
+          "description": "jvm_config",
+          "configName": "jvm.config",
+          "required": "true",
+          "type": "string_array",
+          "separator": " ",
+          "default": [
+            "-server",
+            "-Xmx12g",
+            "-Xms12g",
+            "-XX:NewSize=6g",
+            "-XX:MaxNewSize=6g",
+            "-XX:MaxDirectMemorySize=32g",
+            "-XX:+UseConcMarkSweepGC",
+            "-XX:+PrintGCDetails",
+            "-XX:+PrintGCTimeStamps",
+            "-Duser.timezone=UTC",
+            "-Dfile.encoding=UTF-8",
+            "-Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager",
+            "-Djava.io.tmpdir=/tmp/druid"
+          ]
+        }
+      ],
+      "configWriter": {
+        "generators": [
+          {
+            "filename": "config/runtime.properties",
+            "configFormat": "properties",
+            "excludedParams": [
+              "jvm_config",
+              "extensions_remoteRepositories",
+              "extensions_coordinates"
+            ],
+            "additionalConfigs": [
+              {
+                "key": "druid.host",
+                "value": "${host}"
+              },
+              {
+                "key": "druid.zk.service.host",
+                "value": "{{ZK_QUORUM}}"
+              },
+              {
+                "key": "druid.extensions.remoteRepositories",
+                "value": "[\"${extensions_remoteRepositories}\"]"
+              },
+              {
+                "key": "druid.extensions.coordinates",
+                "value": "[\"${extensions_coordinates}\"]"
+              }
+            ]
+          }
+        ],
+        "auxConfigGenerators": [
+          {
+            "filename": "config/log4j2.yml",
+            "sourceFilename": "aux/log4j2.yml"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DRUID_REALTIME",
+      "label": "Realtime",
+      "pluralLabel": "Realtimes",
+      "startRunner": {
+        "program": "scripts/control.sh",
+        "args": [
+          "start_realtime"
+        ],
+        "environmentVariables": {
+          "DRUID_ROLE_CFG": "runtime.properties",
+          "DRUID_ROLE_JVM_OPTS": "${jvm_config}",
+          "REALTIME_SPEC": "realtime.spec",
+          "LOG4J2_LOG_DIR": "/var/log/druid",
+          "LOG4J2_LOG_FILE": "realtime.log",
+          "LOG4J2_THRESHOLD": "${realtime_log_threshold}",
+          "LOG4J2_MAX_SIZE": "${realtime_log_max_size}MB",
+          "LOG4J2_MAX_BACKUPS": "${realtime_log_max_backups}"
+        }
+      },
+      "commands": [
+      ],
+      "externalLink": {
+        "name": "realtime_web_ui",
+        "label": "Realtime Web UI",
+        "url": "http://${host}:${realtime_bind_port}"
+      },
+      "topology": {"minInstances": 1},
+      "logging": {
+        "dir": "/var/log/druid",
+        "filename": "realtime.log",
+        "isModifiable": false,
+        "loggingType": "other"
+      },
+      "parameters": [
+        {
+          "name": "realtime_bind_address",
+          "label": "Realtime Bind Address",
+          "description": "Realtime server hostname to bind to",
+          "configName": "druid.host",
+          "required": "true",
+          "type": "string",
+          "default": "0.0.0.0"
+        },
+        {
+          "name": "realtime_bind_port",
+          "label": "Realtime Bind Port",
+          "description": "Realtime server port",
+          "configName": "druid.port",
+          "required": "true",
+          "type": "port",
+          "default": 52201
+        },
+        {
+          "name": "realtime_service_name",
+          "label": "Realtime Service Name",
+          "description": "Realtime service name",
+          "configName": "druid.service",
+          "required": "true",
+          "type": "string",
+          "default": "druid/prod/realtime"
+        },
+        {
+          "name": "realtime_log_threshold",
+          "label": "Realtime Service Logging Threshold",
+          "description": "The minimum log level for Druid Realtime Service logs (via Log4j2)",
+          "required": true,
+          "default": "WARN",
+          "type": "string_enum",
+          "validValues": [
+            "TRACE",
+            "DEBUG",
+            "INFO",
+            "WARN",
+            "ERROR",
+            "FATAL"
+          ]
+        },
+        {
+          "name": "realtime_log_max_size",
+          "label": "Realtime Service Max Log Size",
+          "description": "The maximum size, in megabytes, per log file for Druid Realtime Service logs (via log4j2)",
+          "required": true,
+          "type": "long",
+          "unit": "megabytes",
+          "default": 200
+        },
+        {
+          "name": "realtime_log_max_backups",
+          "label": "Realtime Service Max Log File Backups",
+          "description": "The maximum number of rolled log files to keep for Druid Realtime Service logs (via log4j2)",
+          "required": true,
+          "type": "long",
+          "default": 10
+        },
+        {
+          "name": "jvm_config",
+          "label": "jvm_config",
+          "description": "jvm_config",
+          "configName": "jvm.config",
+          "required": "true",
+          "type": "string_array",
+          "separator": " ",
+          "default": [
+            "-server",
+            "-Xmx4g",
+            "-Xms4g",
+            "-XX:NewSize=256m",
+            "-XX:MaxNewSize=256m",
+            "-XX:+UseConcMarkSweepGC",
+            "-XX:+PrintGCDetails",
+            "-XX:+PrintGCTimeStamps",
+            "-Duser.timezone=UTC",
+            "-Dfile.encoding=UTF-8",
+            "-Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager",
+            "-Djava.io.tmpdir=/tmp/druid"
+          ]
+        }
+      ],
+      "configWriter": {
+        "generators": [
+          {
+            "filename": "config/runtime.properties",
+            "configFormat": "properties",
+            "excludedParams": [
+              "jvm_config",
+              "extensions_remoteRepositories",
+              "extensions_coordinates"
+            ],
+            "additionalConfigs": [
+              {
+                "key": "druid.host",
+                "value": "${host}"
+              },
+              {
+                "key": "druid.zk.service.host",
+                "value": "{{ZK_QUORUM}}"
+              },
+              {
+                "key": "druid.extensions.remoteRepositories",
+                "value": "[\"${extensions_remoteRepositories}\"]"
+              },
+              {
+                "key": "druid.extensions.coordinates",
+                "value": "[\"${extensions_coordinates}\"]"
+              }
+            ]
+          },
+          {
+            "filename": "config/realtime.spec",
+            "configFormat": "hadoop_xml",
+            "excludedParams": [
+              "realtime_bind_address",
+              "realtime_bind_port",
+              "realtime_service_name",
+              "realtime_log_threshold",
+              "realtime_log_max_backups",
+              "realtime_log_max_size",
+              "jvm_config",
+              "log_dir",
+              "extensions_remoteRepositories",
+              "extensions_coordinates",
+              "zk_paths_base",
+              "discovery_curator_path",
+              "request_logging_type",
+              "metadata_storage_type",
+              "metadata_storage_connector_connectURI",
+              "metadata_storage_connector_user",
+              "metadata_storage_connector_password",
+              "deep_storage_type",
+              "deep_storage_directory",
+              "cache_type"
+            ]
+          }
+        ],
+        "auxConfigGenerators": [
+          {
+            "filename": "config/log4j2.yml",
+            "sourceFilename": "aux/log4j2.yml"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DRUID_OVERLORD",
+      "label": "Overlord",
+      "pluralLabel": "Overlords",
+      "startRunner": {
+        "program": "scripts/control.sh",
+        "args": [
+          "start_overlord"
+        ],
+        "environmentVariables": {
+          "DRUID_ROLE_CFG": "runtime.properties",
+          "DRUID_ROLE_JVM_OPTS": "${jvm_config}",
+          "LOG4J2_LOG_DIR": "/var/log/druid",
+          "LOG4J2_LOG_FILE": "overlord.log",
+          "LOG4J2_THRESHOLD": "${overlord_log_threshold}",
+          "LOG4J2_MAX_SIZE": "${overlord_log_max_size}MB",
+          "LOG4J2_MAX_BACKUPS": "${overlord_log_max_backups}"
+        }
+      },
+      "commands": [
+      ],
+      "externalLink": {
+        "name": "overlord_web_ui",
+        "label": "Overlord Web UI",
+        "url": "http://${host}:${overlord_bind_port}/console.html"
+      },
+      "topology": {
+        "minInstances": 1,
+        "maxInstances": 1
+      },
+      "logging": {
+        "dir": "/var/log/druid",
+        "filename": "overlord.log",
+        "isModifiable": false,
+        "loggingType": "other"
+      },
+      "parameters": [
+        {
+          "name": "overlord_bind_address",
+          "label": "Overlord Bind Address",
+          "description": "Overlord server hostname to bind to",
+          "configName": "druid.host",
+          "required": "true",
+          "type": "string",
+          "default": "0.0.0.0"
+        },
+        {
+          "name": "overlord_bind_port",
+          "label": "Overlord Bind Port",
+          "description": "Overlord server port",
+          "configName": "druid.port",
+          "required": "true",
+          "type": "port",
+          "default": 52204
+        },
+        {
+          "name": "overlord_service_name",
+          "label": "Overlord Service Name",
+          "description": "Overlord service name",
+          "configName": "druid.service",
+          "required": "true",
+          "type": "string",
+          "default": "druid/prod/overlord"
+        },
+        {
+          "name": "overlord_log_threshold",
+          "label": "Overlord Service Logging Threshold",
+          "description": "The minimum log level for Druid Overlord Service logs (via Log4j2)",
+          "required": true,
+          "default": "WARN",
+          "type": "string_enum",
+          "validValues": [
+            "TRACE",
+            "DEBUG",
+            "INFO",
+            "WARN",
+            "ERROR",
+            "FATAL"
+          ]
+        },
+        {
+          "name": "overlord_log_max_size",
+          "label": "Overlord Service Max Log Size",
+          "description": "The maximum size, in megabytes, per log file for Druid Overlord Service logs (via log4j2)",
+          "required": true,
+          "type": "long",
+          "unit": "megabytes",
+          "default": 200
+        },
+        {
+          "name": "overlord_log_max_backups",
+          "label": "Overlord Service Max Log File Backups",
+          "description": "The maximum number of rolled log files to keep for Druid Overlord Service logs (via log4j2)",
+          "required": true,
+          "type": "long",
+          "default": 10
+        },
+        {
+          "name": "jvm_config",
+          "label": "jvm_config",
+          "description": "jvm_config",
+          "configName": "jvm.config",
+          "required": "true",
+          "type": "string_array",
+          "separator": " ",
+          "default": [
+            "-server",
+            "-Xmx4g",
+            "-Xms4g",
+            "-XX:NewSize=256m",
+            "-XX:MaxNewSize=256m",
+            "-XX:+UseConcMarkSweepGC",
+            "-XX:+PrintGCDetails",
+            "-XX:+PrintGCTimeStamps",
+            "-Duser.timezone=UTC",
+            "-Dfile.encoding=UTF-8",
+            "-Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager",
+            "-Djava.io.tmpdir=/tmp/druid"
+          ]
+        }
+      ],
+      "configWriter": {
+        "generators": [
+          {
+            "filename": "config/runtime.properties",
+            "configFormat": "properties",
+            "excludedParams": [
+              "jvm_config",
+              "extensions_remoteRepositories",
+              "extensions_coordinates"
+            ],
+            "additionalConfigs": [
+              {
+                "key": "druid.host",
+                "value": "${host}"
+              },
+              {
+                "key": "druid.zk.service.host",
+                "value": "{{ZK_QUORUM}}"
+              },
+              {
+                "key": "druid.extensions.remoteRepositories",
+                "value": "[\"${extensions_remoteRepositories}\"]"
+              },
+              {
+                "key": "druid.extensions.coordinates",
+                "value": "[\"${extensions_coordinates}\"]"
+              }
+            ]
+          }
+        ],
+        "auxConfigGenerators": [
+          {
+            "filename": "config/log4j2.yml",
+            "sourceFilename": "aux/log4j2.yml"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DRUID_MIDDLE_MANAGER",
+      "label": "MiddleManager",
+      "pluralLabel": "MiddleManager",
+      "startRunner": {
+        "program": "scripts/control.sh",
+        "args": [
+          "start_middleManager"
+        ],
+        "environmentVariables": {
+          "DRUID_ROLE_CFG": "runtime.properties",
+          "DRUID_ROLE_JVM_OPTS": "${jvm_config}",
+          "LOG4J2_LOG_DIR": "/var/log/druid",
+          "LOG4J2_LOG_FILE": "middleManager.log",
+          "LOG4J2_THRESHOLD": "${middleManager_log_threshold}",
+          "LOG4J2_MAX_SIZE": "${middleManager_log_max_size}MB",
+          "LOG4J2_MAX_BACKUPS": "${middleManager_log_max_backups}"
+        }
+      },
+      "commands": [
+      ],
+      "externalLink": {
+        "name": "middleManager_web_ui",
+        "label": "MiddleManager Web UI",
+        "url": "http://${host}:${middleManager_bind_port}"
+      },
+      "topology": {
+        "minInstances": 1
+      },
+      "logging": {
+        "dir": "/var/log/druid",
+        "filename": "middleManager.log",
+        "isModifiable": false,
+        "loggingType": "other"
+      },
+      "parameters": [
+        {
+          "name": "middleManager_bind_address",
+          "label": "MiddleManager Bind Address",
+          "description": "MiddleManager server hostname to bind to",
+          "configName": "druid.host",
+          "required": "true",
+          "type": "string",
+          "default": "0.0.0.0"
+        },
+        {
+          "name": "middleManager_bind_port",
+          "label": "MiddleManager Bind Port",
+          "description": "MiddleManager server port",
+          "configName": "druid.port",
+          "required": "true",
+          "type": "port",
+          "default": 52205
+        },
+        {
+          "name": "middleManager_service_name",
+          "label": "MiddleManager Service Name",
+          "description": "MiddleManager service name",
+          "configName": "druid.service",
+          "required": "true",
+          "type": "string",
+          "default": "druid/prod/middleManager"
+        },
+        {
+          "name": "middleManager_log_threshold",
+          "label": "MiddleManager Service Logging Threshold",
+          "description": "The minimum log level for Druid MiddleManager Service logs (via Log4j2)",
+          "required": true,
+          "default": "WARN",
+          "type": "string_enum",
+          "validValues": [
+            "TRACE",
+            "DEBUG",
+            "INFO",
+            "WARN",
+            "ERROR",
+            "FATAL"
+          ]
+        },
+        {
+          "name": "middleManager_log_max_size",
+          "label": "MiddleManager Service Max Log Size",
+          "description": "The maximum size, in megabytes, per log file for Druid MiddleManager Service logs (via log4j2)",
+          "required": true,
+          "type": "long",
+          "unit": "megabytes",
+          "default": 200
+        },
+        {
+          "name": "middleManager_log_max_backups",
+          "label": "MiddleManager Service Max Log File Backups",
+          "description": "The maximum number of rolled log files to keep for Druid MiddleManager Service logs (via log4j2)",
+          "required": true,
+          "type": "long",
+          "default": 10
+        },
+        {
+          "name": "jvm_config",
+          "label": "jvm_config",
+          "description": "jvm_config",
+          "configName": "jvm.config",
+          "required": "true",
+          "type": "string_array",
+          "separator": " ",
+          "default": [
+            "-server",
+            "-Xmx64m",
+            "-Xms64m",
+            "-XX:+UseConcMarkSweepGC",
+            "-XX:+PrintGCDetails",
+            "-XX:+PrintGCTimeStamps",
+            "-Duser.timezone=UTC",
+            "-Dfile.encoding=UTF-8",
+            "-Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager",
+            "-Djava.io.tmpdir=/tmp/druid"
+          ]
+        }
+      ],
+      "configWriter": {
+        "generators": [
+          {
+            "filename": "config/runtime.properties",
+            "configFormat": "properties",
+            "excludedParams": [
+              "jvm_config",
+              "extensions_remoteRepositories",
+              "extensions_coordinates"
+            ],
+            "additionalConfigs": [
+              {
+                "key": "druid.host",
+                "value": "${host}"
+              },
+              {
+                "key": "druid.zk.service.host",
+                "value": "{{ZK_QUORUM}}"
+              },
+              {
+                "key": "druid.extensions.remoteRepositories",
+                "value": "[\"${extensions_remoteRepositories}\"]"
+              },
+              {
+                "key": "druid.extensions.coordinates",
+                "value": "[\"${extensions_coordinates}\"]"
+              }
+            ]
+          }
+        ],
+        "auxConfigGenerators": [
+          {
+            "filename": "config/log4j2.yml",
+            "sourceFilename": "aux/log4j2.yml"
+          }
+        ]
+      }
+    }
+  ]
+}

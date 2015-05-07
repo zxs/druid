@@ -26,7 +26,7 @@ import io.druid.query.Query;
 import io.druid.query.TableDataSource;
 import io.druid.query.spec.MultipleIntervalSegmentSpec;
 import io.druid.query.timeboundary.TimeBoundaryQuery;
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.easymock.EasyMock;
 import org.joda.time.Interval;
 import org.junit.After;

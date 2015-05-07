@@ -17,8 +17,8 @@
 
 package io.druid.common.utils;
 
+import com.google.common.io.ByteSink;
 import com.google.common.io.ByteStreams;
-import com.google.common.io.OutputSupplier;
 import com.google.common.primitives.Ints;
 import io.druid.collections.IntList;
 
@@ -42,9 +42,9 @@ public class SerializerUtils
     out.write(nameBytes);
   }
 
-  public void writeString(OutputSupplier<? extends OutputStream> supplier, String name) throws IOException
+  public void writeString(ByteSink supplier, String name) throws IOException
   {
-    try (OutputStream out = supplier.getOutput()) {
+    try (OutputStream out = supplier.openStream()) {
       writeString(out, name);
     }
   }

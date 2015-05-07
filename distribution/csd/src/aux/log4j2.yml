@@ -1,0 +1,32 @@
+Configuration:
+  status: "warn"
+  Appenders:
+    Console:
+      name: "console"
+      PatternLayout:
+        pattern: "%d %p %c{1.} [%t] %m%n"
+    RollingFile:
+      name: "file"
+      fileName: "{{LOG4J2_LOG_DIR}}/{{LOG4J2_LOG_FILE}}"
+      filePattern: "{{LOG4J2_LOG_DIR}}/{{LOG4J2_LOG_FILE}}-%d{MM-dd-yyyy}-%i.log.gz"
+      PatternLayout:
+        pattern: "%d %p %c{1.} [%t] %m%n"
+      Policies:
+        TimeBasedTriggeringPolicy: {}
+        SizeBasedTriggeringPolicy:
+          size: "{{LOG4J2_MAX_SIZE}}"
+      DefaultRolloverStrategy:
+        max: "{{LOG4J2_MAX_BACKUPS}}"
+  Loggers:
+    Root:
+      level: "{{LOG4J2_THRESHOLD}}"
+      AppenderRef:
+        - ref: "console"
+        - ref: "file"
+    Logger:
+      - name: "org.apache.hadoop"
+        level: "debug"
+        additivity: "false"
+        AppenderRef:
+          - ref: "console"
+          - ref: "file"

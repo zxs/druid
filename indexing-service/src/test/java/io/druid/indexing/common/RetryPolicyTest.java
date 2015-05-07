@@ -17,7 +17,7 @@
 
 package io.druid.indexing.common;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.joda.time.Duration;
 import org.joda.time.Period;
 import org.junit.Test;

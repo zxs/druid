@@ -35,7 +35,7 @@ import io.druid.server.coordinator.rules.IntervalLoadRule;
 import io.druid.server.coordinator.rules.PeriodLoadRule;
 import io.druid.server.coordinator.rules.Rule;
 import io.druid.server.metrics.NoopServiceEmitter;
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
 import org.junit.After;

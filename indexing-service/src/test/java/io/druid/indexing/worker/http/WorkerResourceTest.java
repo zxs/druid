@@ -25,7 +25,7 @@ import io.druid.indexing.worker.WorkerCuratorCoordinator;
 import io.druid.jackson.DefaultObjectMapper;
 import io.druid.server.initialization.IndexerZkConfig;
 import io.druid.server.initialization.ZkPathsConfig;
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;

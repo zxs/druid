@@ -17,6 +17,7 @@
 
 package io.druid.segment;
 
+import com.google.common.io.ByteSink;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.InputSupplier;
 import com.google.common.io.OutputSupplier;
@@ -91,7 +92,7 @@ public class MetricHolder
   }
 
   public static void writeFloatMetric(
-      OutputSupplier<? extends OutputStream> outSupplier, String name, CompressedFloatsSupplierSerializer column
+      ByteSink outSupplier, String name, CompressedFloatsSupplierSerializer column
   ) throws IOException
   {
     ByteStreams.write(version, outSupplier);
@@ -101,10 +102,10 @@ public class MetricHolder
   }
 
   public static void writeLongMetric(
-      OutputSupplier<? extends OutputStream> outSupplier, String name, CompressedLongsSupplierSerializer column
+      ByteSink outSupplier, String name, CompressedLongsSupplierSerializer column
   ) throws IOException
   {
-    ByteStreams.write(version, outSupplier);
+    outSupplier.write(version);
     serializerUtils.writeString(outSupplier, name);
     serializerUtils.writeString(outSupplier, "long");
     column.closeAndConsolidate(outSupplier);

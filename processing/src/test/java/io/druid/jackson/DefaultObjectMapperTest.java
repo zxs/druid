@@ -18,7 +18,7 @@
 package io.druid.jackson;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.joda.time.DateTime;
 import org.junit.Test;
 

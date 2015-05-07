@@ -22,7 +22,7 @@ import com.google.common.collect.Maps;
 import com.metamx.common.ISE;
 import io.druid.granularity.QueryGranularity;
 import io.druid.query.Result;
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.joda.time.DateTime;
 import org.junit.Test;
 

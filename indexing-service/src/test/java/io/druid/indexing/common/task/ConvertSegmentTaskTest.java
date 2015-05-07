@@ -61,4 +61,5 @@ public class ConvertSegmentTaskTest
     task2 = jsonMapper.readValue(jsonMapper.writerWithDefaultPrettyPrinter().writeValueAsString(task), Task.class);
     Assert.assertEquals(task, task2);
   }
+
 }

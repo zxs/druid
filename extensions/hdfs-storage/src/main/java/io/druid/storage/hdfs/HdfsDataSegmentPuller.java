@@ -172,8 +172,8 @@ public class HdfsDataSegmentPuller implements DataSegmentPuller, URIDataPuller
 
   public FileUtils.FileCopyResult getSegmentFiles(final Path path, final File outDir) throws SegmentLoadingException
   {
-    final LocalFileSystem localFileSystem = new LocalFileSystem();
     try {
+      Thread.currentThread().setContextClassLoader(config.getClassLoader());
       final FileSystem fs = path.getFileSystem(config);
       if (fs.isDirectory(path)) {
 

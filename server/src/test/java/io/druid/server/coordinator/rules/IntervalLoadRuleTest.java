@@ -21,7 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import io.druid.client.DruidServer;
 import io.druid.jackson.DefaultObjectMapper;
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.joda.time.Interval;
 import org.junit.Test;
  

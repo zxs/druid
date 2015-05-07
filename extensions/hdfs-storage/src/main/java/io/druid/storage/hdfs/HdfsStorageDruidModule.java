@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.Module;
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Binder;
 import com.google.inject.Inject;
+import com.metamx.common.logger.Logger;
 import io.druid.guice.Binders;
 import io.druid.guice.JsonConfigProvider;
 import io.druid.guice.LazySingleton;
@@ -30,6 +31,8 @@ import io.druid.storage.hdfs.tasklog.HdfsTaskLogs;
 import io.druid.storage.hdfs.tasklog.HdfsTaskLogsConfig;
 import org.apache.hadoop.conf.Configuration;
 
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.List;
 import java.util.Properties;
 
@@ -39,6 +42,7 @@ public class HdfsStorageDruidModule implements DruidModule
 {
   public static final String SCHEME = "hdfs";
   private Properties props = null;
+  private static final Logger log = new Logger(HdfsStorageDruidModule.class);
 
   @Inject
   public void setProperties(Properties props)
@@ -79,8 +83,22 @@ public class HdfsStorageDruidModule implements DruidModule
     Binders.dataSegmentPullerBinder(binder).addBinding(SCHEME).to(HdfsDataSegmentPuller.class).in(LazySingleton.class);
     Binders.dataSegmentPusherBinder(binder).addBinding(SCHEME).to(HdfsDataSegmentPusher.class).in(LazySingleton.class);
     Binders.dataSegmentKillerBinder(binder).addBinding(SCHEME).to(HdfsDataSegmentKiller.class).in(LazySingleton.class);
-
+    ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+    log.debug("Thread.currentThread().getContextClassLoader():[%s]", classLoader);
+    if(classLoader instanceof URLClassLoader) {
+      for(URL url: ((URLClassLoader) classLoader).getURLs() ) {
+        log.debug("[%s]", url);
+      }
+    }
+    classLoader = Configuration.class.getClassLoader();
+    log.debug("Configuration.class.getClassLoader():[%s]", classLoader);
+    if(classLoader instanceof URLClassLoader) {
+      for(URL url: ((URLClassLoader) classLoader).getURLs() ) {
+        log.debug("[%s]", url);
+      }
+    }
     final Configuration conf = new Configuration();
+    conf.setClassLoader(classLoader);
     if (props != null) {
       for (String propName : System.getProperties().stringPropertyNames()) {
         if (propName.startsWith("hadoop.")) {

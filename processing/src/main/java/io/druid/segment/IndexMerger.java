@@ -29,7 +29,9 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
+import com.google.common.io.ByteSink;
 import com.google.common.io.ByteStreams;
+import com.google.common.io.FileWriteMode;
 import com.google.common.io.Files;
 import com.google.common.io.OutputSupplier;
 import com.google.common.primitives.Ints;
@@ -567,6 +569,7 @@ public class IndexMerger
       dimensionCardinalities.put(dimension, count);
 
       FileOutputSupplier dimOut = new FileOutputSupplier(IndexIO.makeDimFile(v8OutDir, dimension), true);
+
       dimOuts.add(dimOut);
 
       writer.close();
@@ -738,7 +741,7 @@ public class IndexMerger
 
     final File timeFile = IndexIO.makeTimeFile(v8OutDir, IndexIO.BYTE_ORDER);
     timeFile.delete();
-    OutputSupplier<FileOutputStream> out = Files.newOutputStreamSupplier(timeFile, true);
+    ByteSink out = Files.asByteSink(timeFile, FileWriteMode.APPEND);
     timeWriter.closeAndConsolidate(out);
     IndexIO.checkFileSize(timeFile);
 
@@ -764,12 +767,11 @@ public class IndexMerger
 
     final File invertedFile = new File(v8OutDir, "inverted.drd");
     Files.touch(invertedFile);
-    out = Files.newOutputStreamSupplier(invertedFile, true);
+    out = Files.asByteSink(invertedFile,FileWriteMode.APPEND);
 
     final File geoFile = new File(v8OutDir, "spatial.drd");
     Files.touch(geoFile);
-    OutputSupplier<FileOutputStream> spatialOut = Files.newOutputStreamSupplier(geoFile, true);
-
+    ByteSink spatialOut = Files.asByteSink(geoFile, FileWriteMode.APPEND);
     for (int i = 0; i < mergedDimensions.size(); ++i) {
       long dimStartTime = System.currentTimeMillis();
       String dimension = mergedDimensions.get(i);
